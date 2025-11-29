@@ -2,9 +2,8 @@ name: Test Suite
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 env:
   # Default Redis connection for all jobs
