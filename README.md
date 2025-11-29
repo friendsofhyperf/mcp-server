@@ -1,198 +1,369 @@
-# Model Context Protocol for Hyperf
+# Hyperf MCP Server
 
-[![Latest Stable Version](https://poser.pugx.org/friendsofhyperf/mcp/v/stable.svg)](https://packagist.org/packages/friendsofhyperf/mcp)
-[![Total Downloads](https://poser.pugx.org/friendsofhyperf/mcp/downloads.svg)](https://packagist.org/packages/friendsofhyperf/mcp)
-[![License](https://poser.pugx.org/friendsofhyperf/mcp/license.svg)](https://packagist.org/packages/friendsofhyperf/mcp)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue.svg)](https://php.net)
+[![Hyperf Version](https://img.shields.io/badge/hyperf-%7E3.1.0-green.svg)](https://hyperf.io)
 
-`friendsofhyperf/mcp` 是一个基于 [Hyperf](https://hyperf.io) 框架的 Model Context Protocol 服务器实现，帮助您创建和管理 MCP 服务，用于构建智能 AI 助手交互系统。
+**Hyperf MCP Server** 是一个基于 Hyperf 框架的 Model Context Protocol (MCP) 服务器实现，提供了完整的 MCP 协议支持，包括工具、资源和提示管理功能。
 
-## 简介
+## 🚀 特性
 
-Model Context Protocol (MCP) 是一种用于 AI 模型和应用程序之间交互的协议，`friendsofhyperf/mcp` 为 Hyperf 框架提供了完整的 MCP 服务器实现，支持：
+- **完整的 MCP 协议支持** - 实现了 Model Context Protocol 规范
+- **多传输方式** - 支持 STDIO 和 HTTP 两种传输协议
+- **会话管理** - 基于 Redis 的分布式会话存储
+- **注解驱动** - 支持通过注解自动发现和注册工具、资源和提示
+- **灵活配置** - 丰富的配置选项，支持多服务器实例
+- **Hyperf 集成** - 完全集成 Hyperf 框架的依赖注入和事件系统
+- **命令行支持** - 内置命令行工具用于启动 MCP 服务器
 
-- 工具定义与调用
-- 资源管理
-- 提示模板
-- SSE (Server-Sent Events) 和命令行交互方式
+## 📋 要求
 
-## 安装
+- PHP >= 8.1
+- Hyperf ~3.1.0
+- Redis 扩展
+- Composer
 
-通过 Composer 安装：
-
-```bash
-composer require friendsofhyperf/mcp
-```
-
-## 配置
-
-安装完成后，执行以下命令发布配置文件：
+## 📦 安装
 
 ```bash
-php bin/hyperf.php vendor:publish friendsofhyperf/mcp
+composer require hyperf/mcp-server-incubator
 ```
 
-配置文件位于 `config/autoload/mcp.php`：
+## ⚙️ 配置
+
+### 发布配置文件
+
+```bash
+php bin/hyperf.php vendor:publish hyperf/mcp-server-incubator
+```
+
+配置示例：
 
 ```php
 <?php
-
 return [
     'servers' => [
         [
-            'name' => 'demo',
+            'enabled' => true,
+            'name' => 'My MCP Server',
             'version' => '1.0.0',
-            'description' => 'This is a demo mcp server.',
-            // SSE 服务器配置选项
-            'sse' => [
-                'server' => 'http',
-                'endpoint' => '/sse',
-                'middlewares' => [],
+            'description' => 'A powerful MCP server implementation',
+            'website_url' => 'https://example.com',
+            'icons' => [
+                [
+                    'url' => 'https://example.com/icon.png',
+                    'media_type' => 'image/png',
+                    'width' => 64,
+                    'height' => 64
+                ]
             ],
-            // 其他配置选项
-            'options' => [
-                'logger' => null,
-                'enforceStrictCapabilities' => false,
+
+            // 服务器能力配置
+            'capabilities' => [
+                'tools' => true,
+                'resources' => true,
+                'prompts' => true,
+                'completions' => true,
             ],
-        ],
-    ],
+
+            // 协议版本
+            'protocol_version' => '2024-11-05',
+
+            // 分页限制
+            'pagination_limit' => 100,
+
+            // 会话配置
+            'session' => [
+                'ttl' => 3600,
+                'store' => \Mcp\Server\Session\SessionInterface::class,
+                'factory' => \Mcp\Server\Session\SessionFactory::class,
+            ],
+
+            // 类发现配置
+            'discovery' => [
+                'base_path' => BASE_PATH,
+                'scan_dirs' => ['app', 'src'],
+                'exclude_dirs' => ['vendor', 'tests'],
+                // 'cache' => \Psr\SimpleCache\CacheInterface::class,
+            ],
+
+            // 路由配置（HTTP 传输）
+            'http' => [
+                'path' => '/mcp',
+                'options' => [
+                    'middleware' => ['auth']
+                ],
+                // 'server' => 'http', // 指定服务器名称（可选）
+            ],
+
+            // 命令行配置（STDIO 传输）
+            'stdio' => [
+                'name' => 'mcp:server',
+                'description' => 'Start MCP server via STDIO'
+            ]
+        ]
+    ]
 ];
 ```
 
-## 快速开始
+## 🔧 使用
 
-### 创建工具
+### 1. 创建工具
 
-使用 `#[Tool]` 注解创建工具：
-
-```php
-<?php
-
-namespace App\Controller;
-
-use FriendsOfHyperf\MCP\Annotation\Tool;
-
-class FileController
-{
-    #[Tool(name: 'read_file', description: '读取文件内容', server: 'demo')]
-    public function readFile(string $path): string
-    {
-        return ['toolResult' => file_get_contents($path)];
-    }
-
-    #[Tool(name: 'write_file', description: '写入文件内容', server: 'demo')]
-    public function writeFile(string $path, string $content): bool
-    {
-        return (bool) file_put_contents($path, $content);
-    }
-}
-```
-
-### 创建资源
-
-使用 `#[Resource]` 注解创建资源：
+使用 `#[McpTool]` 注解创建工具：
 
 ```php
 <?php
 
-namespace App\Controller;
+declare(strict_types=1);
 
-use FriendsOfHyperf\MCP\Annotation\Resource;
+namespace App\Tool;
 
-class FileController
+use Mcp\Capability\Attribute\McpTool;
+
+#[McpTool(
+    name: 'calculator.add',
+    description: 'Add two numbers together',
+    inputSchema: [
+        'type' => 'object',
+        'properties' => [
+            'a' => ['type' => 'number'],
+            'b' => ['type' => 'number']
+        ],
+        'required' => ['a', 'b']
+    ]
+)]
+class CalculatorTool
 {
-    #[Resource(scheme: 'file', server: 'demo')]
-    public function getResource(string $path): string
+    public function handle(array $params): array
     {
-        return file_get_contents($path);
+        $result = $params['a'] + $params['b'];
+        return [
+            'content' => [
+                [
+                    'type' => 'text',
+                    'text' => "The sum of {$params['a']} and {$params['b']} is {$result}"
+                ]
+            ]
+        ];
     }
 }
 ```
 
-### 创建 Prompt
+### 2. 创建资源
 
-使用 `#[Prompt]` 注解创建 Prompt：
+使用 `#[McpResource]` 注解创建资源：
 
 ```php
 <?php
 
-namespace App\Controller;
+declare(strict_types=1);
 
-use FriendsOfHyperf\MCP\Annotation\Prompt;
+namespace App\Resource;
 
-class ChatController
+use Mcp\Capability\Attribute\McpResource;
+
+#[McpResource(
+    uri: 'file:///var/log/app.log',
+    name: 'Application Log',
+    description: 'Current application log file',
+    mimeType: 'text/plain'
+)]
+class LogResource
 {
-    #[Prompt(name: 'chat', description: '聊天功能', server: 'demo')]
-    public function chat(string $message): string
+    public function handle(array $params): array
     {
-        return "您发送的消息是：{$message}";
+        $content = file_get_contents('/var/log/app.log');
+        return [
+            'contents' => [
+                [
+                    'uri' => $params['uri'],
+                    'mimeType' => 'text/plain',
+                    'text' => $content
+                ]
+            ]
+        ];
     }
 }
 ```
 
-## 运行服务
+### 3. 创建提示
 
-### 通过 HTTP 服务器运行
+使用 `#[McpPrompt]` 注解创建提示：
 
-MCP 服务会自动注册到 Hyperf 的 HTTP 服务器中。启动 Hyperf HTTP 服务器：
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace App\Prompt;
+
+use Mcp\Capability\Attribute\McpPrompt;
+
+#[McpPrompt(
+    name: 'code-review',
+    description: 'Generate code review suggestions'
+)]
+class CodeReviewPrompt
+{
+    public function handle(array $params): array
+    {
+        $prompt = "Please review the following code and provide suggestions for improvement:\n\n";
+        $prompt .= $params['code'] ?? '';
+
+        return [
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => [
+                        'type' => 'text',
+                        'text' => $prompt
+                    ]
+                ]
+            ]
+        ];
+    }
+}
+```
+
+### 4. 启动服务器
 
 ```bash
+# 启动 Hyperf 服务器，MCP 服务将自动注册并启动
 php bin/hyperf.php start
 ```
 
-然后可以通过配置的 SSE 端点（如 `/sse`）访问 MCP 服务。
+MCP 服务器会自动：
 
-### 通过命令行运行
+- 注册 HTTP 路由端点（默认为 `/mcp`）
+- 注册命令行工具（用于 STDIO 传输）
+- 根据配置自动发现并注册工具、资源和提示
 
-您也可以在命令行模式下运行 MCP 服务：
+## 🏗️ 架构
 
-```bash
-php bin/hyperf.php mcp:run --name=demo
+### 核心组件
+
+- **ServerManager** - 服务器管理器，负责创建和配置 MCP 服务器实例
+- **RegisterMcpServerListener** - 应用启动监听器，自动注册配置的 MCP 服务器
+- **ConfigProvider** - Hyperf 配置提供者，注册服务依赖
+
+### 关键特性
+
+1. **多服务器支持** - 支持在单个应用中运行多个 MCP 服务器实例
+2. **灵活的传输层** - 支持 STDIO 和 HTTP 传输协议
+3. **会话管理** - 支持内存和 Redis 会话存储
+4. **自动发现** - 基于注解的自动组件发现和注册
+5. **事件驱动** - 集成 Hyperf 事件系统
+
+## 🔌 扩展
+
+### 自定义会话存储
+
+实现 `SessionInterface` 接口：
+
+```php
+<?php
+
+use Mcp\Server\Session\SessionInterface;
+
+class CustomSessionStore implements SessionInterface
+{
+    public function get(string $sessionId): ?array
+    {
+        // 自定义会话获取逻辑
+    }
+
+    public function set(string $sessionId, array $data, int $ttl = null): void
+    {
+        // 自定义会话存储逻辑
+    }
+
+    public function delete(string $sessionId): void
+    {
+        // 自定义会话删除逻辑
+    }
+}
 ```
 
-## 工具包介绍
+### 自定义处理器
 
-MCP 服务器提供以下主要功能：
+实现请求和通知处理器：
 
-1. **工具 (Tools)**: 可以通过注解方式定义工具，供 AI 模型调用来执行特定操作。
-2. **资源 (Resources)**: 定义资源处理器，用于获取系统资源。
-3. **提示 (Prompts)**: 定义提示处理器，用于与 AI 模型交互。
+```php
+<?php
 
-## 架构
+use Mcp\Server\Handler\Request\RequestHandlerInterface;
+use Mcp\Server\Transport\TransportInterface;
 
-核心组件：
+class CustomRequestHandler implements RequestHandlerInterface
+{
+    public function canHandle(string $method): bool
+    {
+        return $method === 'custom/method';
+    }
 
-- **ServerRegistry**: 服务注册器，管理所有 MCP 服务实例。
-- **Collectors**: 收集工具、资源和提示定义，并在运行时注册它们。
-- **Transport**: 提供与客户端通信的传输层，包括 SSE 和 STDIO 两种方式。
+    public function handle(array $params, TransportInterface $transport): mixed
+    {
+        // 自定义请求处理逻辑
+    }
+}
+```
 
-## VS Code 扩展
-
-项目包含 `.vscode/mcp.json` 配置文件，可用于配置 VS Code MCP 扩展。您可以在此文件中自定义 MCP 服务器配置。
-
-## 开发和测试
-
-### 代码风格修复
+## 🧪 测试
 
 ```bash
+# 运行测试
+composer test
+
+# 代码分析
+composer analyse src
+
+# 代码格式化
 composer cs-fix
 ```
 
-### 静态分析
+## 📝 配置选项
 
-```bash
-composer analyse
-```
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `enabled` | bool | `true` | 是否启用服务器 |
+| `name` | string | `'MCP Server'` | 服务器名称 |
+| `version` | string | `'1.0.0'` | 服务器版本 |
+| `description` | string | `'A MCP server.'` | 服务器描述 |
+| `protocol_version` | string | `'2024-11-05'` | MCP 协议版本 |
+| `pagination_limit` | int | `100` | 分页限制 |
+| `logger` | string | - | 日志服务名称 |
+| `capabilities` | array | - | 服务器能力配置 |
+| `session.ttl` | int | `3600` | 会话 TTL（秒） |
+| `discovery.scan_dirs` | array | `['.', 'src', 'app']` | 自动发现扫描目录 |
+| `discovery.exclude_dirs` | array | `['vendor', 'tests']` | 排除的扫描目录 |
+| `router.path` | string | `'/mcp'` | HTTP 路由路径 |
+| `router.options` | array | `[]` | 路由中间件等选项 |
+| `command.signature` | string | `'mcp:stdio'` | 命令行工具签名 |
+| `command.description` | string | `'Run MCP stdio server.'` | 命令行工具描述 |
 
-### 运行测试
+## 🤝 贡献
 
-```bash
-composer test
-```
+欢迎提交 Issue 和 Pull Request！
 
-## 贡献
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-欢迎提交 Pull Request 或创建 Issue 来完善此项目。
+## 📄 许可证
 
-## 协议
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
-本项目采用 MIT 许可证。
+## 🔗 相关链接
+
+- [Model Context Protocol 规范](https://modelcontextprotocol.io/)
+- [Hyperf 框架](https://hyperf.io/)
+- [MCP SDK](https://github.com/modelcontextprotocol/servers)
+
+## 📞 支持
+
+- 问题反馈: [GitHub Issues](https://github.com/hyperf/mcp-server/issues)
+- 官方文档: [Hyperf Wiki](https://hyperf.wiki)
+- 社区讨论: [Hyperf 官方群](https://hyperf.io/contact)

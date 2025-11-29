@@ -1,55 +1,76 @@
 {
     "name": "friendsofhyperf/mcp",
-    "description": "Model Context Protocol for Hyperf",
+    "description": "MCP Server - A Model Context Protocol server implementation for Hyperf framework with Redis session management and annotation-based configuration",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "hyperf",
+        "mcp",
+        "model-context-protocol",
+        "server",
+        "redis",
+        "session",
+        "tools",
+        "prompts",
+        "resources",
+        "annotations"
+    ],
+    "homepage": "https://github.com/hyperf/mcp-server",
+    "support": {
+        "issues": "https://github.com/hyperf/mcp-server/issues",
+        "source": "https://github.com/hyperf/mcp-server"
+    },
     "authors": [
         {
-            "name": "Hyperf Community",
-            "homepage": "https://github.com/friendsofhyperf"
+            "name": "Deeka Wong",
+            "email": "huangdijia@gmail.com"
         }
     ],
     "require": {
-        "php": ">=8.1",
-        "huangdijia/mcp-sdk-php": "^0.1.0",
+        "php": "^8.1",
+        "ext-redis": "*",
         "hyperf/command": "~3.1.0",
-        "hyperf/coroutine": "~3.1.54",
-        "hyperf/event": "~3.1.0",
+        "hyperf/context": "~3.1.0",
+        "hyperf/di": "~3.1.0",
         "hyperf/framework": "~3.1.0",
-        "hyperf/http-server": "~3.1.0"
+        "hyperf/http-server": "~3.1.0",
+        "hyperf/redis": "~3.1.0",
+        "mcp/sdk": "^0.1.0"
     },
     "require-dev": {
-        "hyperf/redis": "~3.1.0",
-        "huangdijia/php-coding-standard": "^2.3",
+        "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
+        "huangdijia/php-coding-standard": "^2.0",
         "phpstan/phpstan": "^1.0",
-        "phpunit/phpunit": "^10.0"
+        "hyperf/testing": "~3.1.0"
     },
     "autoload": {
         "psr-4": {
-            "FriendsOfHyperf\\MCP\\": "src/"
+            "FriendsOfHyperf\\Mcp\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FriendsOfHyperf\\MCP\\Test\\": "tests/"
+            "FriendsOfHyperf\\Tests\\Mcp\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "config": {
+        "optimize-autoloader": true,
         "sort-packages": true,
         "allow-plugins": {
-            "ergebnis/composer-normalize": true
+            "ergebnis/composer-normalize": true,
+            "php-http/discovery": true
         }
     },
     "extra": {
         "hyperf": {
-            "config": "FriendsOfHyperf\\MCP\\ConfigProvider"
+            "config": "FriendsOfHyperf\\Mcp\\ConfigProvider"
         }
     },
     "scripts": {
-        "cs-fix": "php-cs-fixer fix $1",
-        "analyse": "phpstan analyse --memory-limit 300M -l 5 $1",
-        "test": "phpunit -c phpunit.xml --colors=always"
-    }
+        "test": "phpunit",
+        "analyse": "phpstan analyse",
+        "cs-fix": "php-cs-fixer fix $1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
