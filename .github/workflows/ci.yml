@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test on PHP ${{ matrix.php-version }} ${{ matrix.dependency-stability }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+        dependency-stability: [prefer-stable, prefer-lowest]
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: redis, json, mbstring, tokenizer
+        coverage: xdebug
+
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-stability }}-${{ hashFiles('**/composer.json') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-stability }}-
+          ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ matrix.dependency-stability }}
+          ${{ runner.os }}-composer-${{ matrix.php-version }}-
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Install dependencies
+      run: composer update --${{ matrix.dependency-stability }} --prefer-dist --no-interaction
+
+    - name: Run code style check
+      run: composer cs-fix --dry-run --diff
+
+    - name: Run static analysis
+      run: composer analyse src --memory-limit=512M
+
+    - name: Run tests
+      run: vendor/bin/phpunit --coverage-clover=coverage.xml
+      env:
+        REDIS_HOST: 127.0.0.1
+        REDIS_PORT: 6379
+
+    - name: Upload coverage to Codecov
+      if: matrix.php-version == '8.4' && matrix.dependency-stability == 'prefer-stable'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  lint-composer:
+    name: Lint composer.json
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate composer.json
+      run: composer validate --strict --no-check-all
+
+    - name: Check composer normalization
+      run: composer normalize --dry-run --diff-check
+
+  security:
+    name: Security audit
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-interaction
+
+    - name: Security audit
+      run: composer audit

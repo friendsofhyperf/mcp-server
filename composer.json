@@ -13,7 +13,14 @@
         "tools",
         "prompts",
         "resources",
-        "annotations"
+        "annotations",
+        "php-8.1",
+        "php-8.2",
+        "php-8.3",
+        "php-8.4",
+        "ai",
+        "claude",
+        "assistant"
     ],
     "homepage": "https://github.com/hyperf/mcp-server",
     "support": {
