@@ -274,9 +274,7 @@ class ServerRegistry
         $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
-            function () use ($transport) {
-                return $transport->listen();
-            },
+            fn () => $transport->listen(),
             $options['options'] ?? []
         );
         if (! empty($options['server'] ?? '')) {
