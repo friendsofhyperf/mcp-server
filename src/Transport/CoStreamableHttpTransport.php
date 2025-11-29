@@ -9,21 +9,22 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace Mcp\Server\Transport;
+namespace FriendsOfHyperf\McpServer\Transport;
 
 use Http\Discovery\Psr17FactoryDiscovery;
 use Hyperf\Context\Context;
 use Hyperf\Context\RequestContext;
 use JsonException;
 use Mcp\Schema\JsonRpc\Error;
+use Mcp\Server\Transport\BaseTransport;
+use Mcp\Server\Transport\CallbackStream;
+use Mcp\Server\Transport\TransportInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\Uuid;
-
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @implements TransportInterface<ResponseInterface>

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace FriendsOfHyperf\McpServer;
 
+use FriendsOfHyperf\McpServer\Transport\CoStreamableHttpTransport;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
@@ -22,7 +23,6 @@ use Mcp\Server;
 use Mcp\Server\Builder;
 use Mcp\Server\Handler\Notification\NotificationHandlerInterface;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
-use Mcp\Server\Transport\CoStreamableHttpTransport;
 use Mcp\Server\Transport\StdioTransport;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
