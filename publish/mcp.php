@@ -39,7 +39,7 @@ return [
             'pagination_limit' => 50,
 
             // Logger service ID (optional, will use PSR-3 logger if available)
-            'logger' => null, // e.g., 'hyperf.logger'
+            'logger' => Hyperf\Contract\StdoutLoggerInterface::class, // e.g., 'hyperf.logger'
 
             // Session configuration
             'session' => [
@@ -65,7 +65,7 @@ return [
             'discovery' => [
                 'base_path' => BASE_PATH,
                 'scan_dirs' => ['.', 'src', 'app'],
-                'exclude_dirs' => ['vendor', 'tests', 'config'],
+                'exclude_dirs' => ['vendor', 'tests', 'config', 'runtime'],
                 'cache' => null, // CacheInterface service ID for discovery cache
             ],
 
