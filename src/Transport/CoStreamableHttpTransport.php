@@ -19,12 +19,13 @@ use Mcp\Schema\JsonRpc\Error;
 use Mcp\Server\Transport\BaseTransport;
 use Mcp\Server\Transport\CallbackStream;
 use Mcp\Server\Transport\TransportInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
+use Swow\Psr7\Message\ServerRequestPlusInterface;
 use Symfony\Component\Uid\Uuid;
+use Throwable;
 
 /**
  * @implements TransportInterface<ResponseInterface>
@@ -76,7 +77,7 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
 
     public function listen(): ResponseInterface
     {
-        return match ($this->getRequest()->getMethod()) {
+        return match ($this->getRequest()?->getMethod()) {
             'OPTIONS' => $this->handleOptionsRequest(),
             'POST' => $this->handlePostRequest(),
             'DELETE' => $this->handleDeleteRequest(),
@@ -92,7 +93,7 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
     protected function handlePostRequest(): ResponseInterface
     {
         $request = $this->getRequest();
-        $body = $request->getBody()->getContents();
+        $body = $request?->getBody()->getContents();
         $this->handleMessage($body, $this->getSessionId());
 
         if ($this->immediateResponse !== null) {
@@ -262,16 +263,21 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
         return $response;
     }
 
-    protected function getRequest(): RequestInterface
+    protected function getRequest(): ?ServerRequestPlusInterface
     {
-        return RequestContext::get();
+        try {
+            return RequestContext::get();
+        } catch (Throwable $e) {
+            $this->logger->warning('Failed to get request from context.', ['exception' => $e]);
+            return null;
+        }
     }
 
     protected function getSessionId(): ?Uuid
     {
         return Context::getOrSet('mcp.session.id', function () {
-            $request = RequestContext::get();
-            $sessionId = $request->getHeaderLine('Mcp-Session-Id');
+            $request = $this->getRequest();
+            $sessionId = $request?->getHeaderLine('Mcp-Session-Id');
             if ($sessionId) {
                 return Uuid::fromString($sessionId);
             }
