@@ -35,7 +35,7 @@ class IntegrationTest extends TestCase
         $this->assertIsCallable($config['dependencies']['Mcp\Server\Session\SessionInterface']);
 
         // Test listeners
-        $this->assertContains(\FriendsOfHyperf\Mcp\Listener\RegisterMcpServerListener::class, $config['listeners']);
+        $this->assertContains(\FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener::class, $config['listeners']);
 
         // Test publish configuration
         $this->assertIsArray($config['publish']);
@@ -87,7 +87,7 @@ class IntegrationTest extends TestCase
     {
         // Test that our test classes can be autoloaded
         $this->assertTrue(class_exists(ConfigProvider::class));
-        $this->assertTrue(class_exists(\FriendsOfHyperf\Mcp\ServerRegistry::class));
-        $this->assertTrue(class_exists(\FriendsOfHyperf\Mcp\Listener\RegisterMcpServerListener::class));
+        $this->assertTrue(class_exists(\FriendsOfHyperf\McpServer\ServerRegistry::class));
+        $this->assertTrue(class_exists(\FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener::class));
     }
 }

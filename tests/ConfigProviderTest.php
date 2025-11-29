@@ -46,7 +46,7 @@ class ConfigProviderTest extends TestCase
         $config = $provider();
 
         $this->assertIsArray($config['listeners']);
-        $this->assertContains(\FriendsOfHyperf\Mcp\Listener\RegisterMcpServerListener::class, $config['listeners']);
+        $this->assertContains(\FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener::class, $config['listeners']);
     }
 
     public function testPublishConfiguration(): void
