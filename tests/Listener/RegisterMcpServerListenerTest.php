@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 /**
  * This file is part of friendsofhyperf/mcp.
  *
@@ -24,7 +23,9 @@ use Psr\Container\ContainerInterface;
 class RegisterMcpServerListenerTest extends TestCase
 {
     private ContainerInterface $container;
+
     private ServerRegistry $serverRegistry;
+
     private RegisterMcpServerListener $listener;
 
     protected function setUp(): void

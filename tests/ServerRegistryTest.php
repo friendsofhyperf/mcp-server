@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 /**
  * This file is part of friendsofhyperf/mcp.
  *
@@ -13,15 +12,13 @@ declare(strict_types=1);
 namespace FriendsOfHyperf\Mcp\Tests;
 
 use FriendsOfHyperf\Mcp\ServerRegistry;
-use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\HttpServer\Router\DispatcherFactory;
-use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Schema\ServerCapabilities;
-use Mcp\Server\Builder;
 use Mcp\Server;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 
 /**
  * @covers \FriendsOfHyperf\Mcp\ServerRegistry
@@ -29,8 +26,11 @@ use Psr\Container\ContainerInterface;
 class ServerRegistryTest extends TestCase
 {
     private ContainerInterface $container;
+
     private ConfigInterface $config;
+
     private DispatcherFactory $dispatcherFactory;
+
     private ServerRegistry $serverRegistry;
 
     protected function setUp(): void
@@ -107,7 +107,7 @@ class ServerRegistryTest extends TestCase
 
     public function testBuildServerCapabilities(): void
     {
-        $reflection = new \ReflectionClass($this->serverRegistry);
+        $reflection = new ReflectionClass($this->serverRegistry);
         $method = $reflection->getMethod('buildServerCapabilities');
         $method->setAccessible(true);
 
@@ -131,7 +131,7 @@ class ServerRegistryTest extends TestCase
 
     public function testBuildServerWithBasicOptions(): void
     {
-        $reflection = new \ReflectionClass($this->serverRegistry);
+        $reflection = new ReflectionClass($this->serverRegistry);
         $method = $reflection->getMethod('buildServer');
         $method->setAccessible(true);
 

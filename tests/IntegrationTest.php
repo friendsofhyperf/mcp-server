@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
 /**
  * This file is part of friendsofhyperf/mcp.
  *
@@ -16,7 +15,7 @@ use FriendsOfHyperf\Mcp\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Integration tests for the MCP package
+ * Integration tests for the MCP package.
  */
 class IntegrationTest extends TestCase
 {
