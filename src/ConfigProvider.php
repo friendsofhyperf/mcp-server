@@ -2,54 +2,33 @@
 
 declare(strict_types=1);
 /**
- * This file is part of huangdijia/mcp-php-sdk.
+ * This file is part of friendsofhyperf/mcp.
  *
- * @link     https://github.com/huangdijia/mcp-php-sdk
- * @document https://github.com/huangdijia/mcp-php-sdk/blob/main/README.md
+ * @link     https://github.com/friendsofhyperf/mcp
+ * @document https://github.com/friendsofhyperf/mcp/blob/main/README.md
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\MCP;
+namespace FriendsOfHyperf\Mcp;
 
-use FriendsOfHyperf\MCP\Collector\PromptCollector;
-use FriendsOfHyperf\MCP\Collector\ResourceCollector;
-use FriendsOfHyperf\MCP\Collector\ToolCollector;
-use FriendsOfHyperf\MCP\Command\MCPCommand;
-use FriendsOfHyperf\MCP\Listener\OnPipeMessageListener;
-use FriendsOfHyperf\MCP\Listener\RegisterServerListener;
-
-defined('BASE_PATH') or define('BASE_PATH', dirname(__DIR__));
+use Mcp\Server\Session\InMemorySessionStore;
+use Mcp\Server\Session\SessionInterface;
 
 class ConfigProvider
 {
     public function __invoke(): array
     {
         return [
-            'annotations' => [
-                'scan' => [
-                    'collectors' => [
-                        PromptCollector::class,
-                        ResourceCollector::class,
-                        ToolCollector::class,
-                    ],
-                ],
-            ],
-            'commands' => [
-                MCPCommand::class,
-            ],
             'dependencies' => [
-                Contract\IdGenerator::class => Generator\IdGenerator::class,
-                Contract\SessionIdGenerator::class => Generator\SessionIdGenerator::class,
-                \ModelContextProtocol\SDK\Shared\Transport::class => Transport\SseServerTransport::class,
+                SessionInterface::class => fn ($container) => new InMemorySessionStore(3600),
             ],
             'listeners' => [
-                RegisterServerListener::class,
-                OnPipeMessageListener::class,
+                Listener\RegisterMcpServerListener::class,
             ],
             'publish' => [
                 [
                     'id' => 'config',
-                    'description' => 'The configuration file of mcp.',
+                    'description' => 'The configuration file of MCP server.',
                     'source' => __DIR__ . '/../publish/mcp.php',
                     'destination' => BASE_PATH . '/config/autoload/mcp.php',
                 ],
