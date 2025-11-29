@@ -316,8 +316,10 @@ class ServerRegistry
         $commandId = 'mcp.command.' . spl_object_id($command);
 
         // Try different container methods for binding
-        if (method_exists($this->container, 'set')) {
-            $this->container->set($commandId, $command);
+        /** @var \Hyperf\Di\Container $container */
+        $container = $this->container;
+        if (method_exists($container, 'set')) {
+            $container->set($commandId, $command);
         }
 
         $commands = $this->config->get('commands', []);
