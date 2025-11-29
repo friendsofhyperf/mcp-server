@@ -1,5 +1,5 @@
 {
-    "name": "friendsofhyperf/mcp",
+    "name": "friendsofhyperf/mcp-server",
     "description": "MCP Server - A Model Context Protocol server implementation for Hyperf framework with Redis session management and annotation-based configuration",
     "license": "MIT",
     "type": "library",

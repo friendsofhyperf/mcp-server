@@ -26,7 +26,7 @@
 ## 📦 安装
 
 ```bash
-composer require hyperf/mcp-server-incubator
+composer require friendsofhyperf/mcp-server
 ```
 
 ## ⚙️ 配置
@@ -34,7 +34,7 @@ composer require hyperf/mcp-server-incubator
 ### 发布配置文件
 
 ```bash
-php bin/hyperf.php vendor:publish hyperf/mcp-server-incubator
+php bin/hyperf.php vendor:publish friendsofhyperf/mcp-server
 ```
 
 配置示例：
