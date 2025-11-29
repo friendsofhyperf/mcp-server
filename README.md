@@ -1,8 +1,8 @@
 # MCP Server
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue.svg)](https://php.net)
-[![Hyperf Version](https://img.shields.io/badge/hyperf-%7E3.1.0-green.svg)](https://hyperf.io)
+[![Latest Stable Version](https://img.shields.io/packagist/v/friendsofhyperf/mcp-server)](https://packagist.org/packages/friendsofhyperf/mcp-server)
+[![Total Downloads](https://img.shields.io/packagist/dt/friendsofhyperf/mcp-server)](https://packagist.org/packages/friendsofhyperf/mcp-server)
+[![License](https://img.shields.io/packagist/l/friendsofhyperf/mcp-server)](https://github.com/friendsofhyperf/mcp-server)
 
 **MCP Server** 是一个基于 Hyperf 框架的 Model Context Protocol (MCP) 服务器实现，提供了完整的 MCP 协议支持，包括工具、资源和提示管理功能。
 
