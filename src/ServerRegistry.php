@@ -31,8 +31,6 @@ use Psr\Log\LoggerInterface;
 
 class ServerRegistry
 {
-    protected array $servers = [];
-
     public function __construct(
         protected DispatcherFactory $dispatcherFactory, // !!! Don't remove this line
         protected ContainerInterface $container,
