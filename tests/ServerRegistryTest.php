@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\Mcp\Tests;
+namespace FriendsOfHyperf\McpServer\Tests;
 
-use FriendsOfHyperf\Mcp\ServerRegistry;
+use FriendsOfHyperf\McpServer\ServerRegistry;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Mcp\Schema\ServerCapabilities;
@@ -21,7 +21,7 @@ use Psr\Container\ContainerInterface;
 use ReflectionClass;
 
 /**
- * @covers \FriendsOfHyperf\Mcp\ServerRegistry
+ * @covers \FriendsOfHyperf\McpServer\ServerRegistry
  */
 class ServerRegistryTest extends TestCase
 {

@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\Mcp;
+namespace FriendsOfHyperf\McpServer;
 
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;

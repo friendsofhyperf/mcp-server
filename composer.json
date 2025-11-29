@@ -54,12 +54,12 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "FriendsOfHyperf\\Mcp\\": "src/"
+            "FriendsOfHyperf\\McpServer\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FriendsOfHyperf\\Tests\\Mcp\\": "tests/"
+            "FriendsOfHyperf\\Tests\\McpServer\\": "tests/"
         }
     },
     "config": {
@@ -72,7 +72,7 @@
     },
     "extra": {
         "hyperf": {
-            "config": "FriendsOfHyperf\\Mcp\\ConfigProvider"
+            "config": "FriendsOfHyperf\\McpServer\\ConfigProvider"
         }
     },
     "scripts": {

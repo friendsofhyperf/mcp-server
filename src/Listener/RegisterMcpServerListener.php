@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\Mcp\Listener;
+namespace FriendsOfHyperf\McpServer\Listener;
 
-use FriendsOfHyperf\Mcp\ServerRegistry;
+use FriendsOfHyperf\McpServer\ServerRegistry;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Psr\Container\ContainerInterface;

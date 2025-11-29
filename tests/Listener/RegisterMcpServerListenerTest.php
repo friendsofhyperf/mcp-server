@@ -11,14 +11,14 @@ declare(strict_types=1);
 
 namespace FriendsOfHyperf\Mcp\Tests\Listener;
 
-use FriendsOfHyperf\Mcp\Listener\RegisterMcpServerListener;
-use FriendsOfHyperf\Mcp\ServerRegistry;
+use FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener;
+use FriendsOfHyperf\McpServer\ServerRegistry;
 use Hyperf\Framework\Event\BootApplication;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
 /**
- * @covers \FriendsOfHyperf\Mcp\Listener\RegisterMcpServerListener
+ * @covers \FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener
  */
 class RegisterMcpServerListenerTest extends TestCase
 {

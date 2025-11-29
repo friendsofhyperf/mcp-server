@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\Mcp\Tests;
+namespace FriendsOfHyperf\McpServer\Tests;
 
-use FriendsOfHyperf\Mcp\ConfigProvider;
+use FriendsOfHyperf\McpServer\ConfigProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
