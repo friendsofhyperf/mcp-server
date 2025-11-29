@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace FriendsOfHyperf\McpServer\Transport;
 
 use Http\Discovery\Psr17FactoryDiscovery;
-use Hyperf\Context\Context;
 use Hyperf\Context\RequestContext;
 use JsonException;
 use Mcp\Schema\JsonRpc\Error;
@@ -25,7 +24,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Swow\Psr7\Message\ServerRequestPlusInterface;
 use Symfony\Component\Uid\Uuid;
-use Throwable;
 
 /**
  * @implements TransportInterface<ResponseInterface>
@@ -77,7 +75,7 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
 
     public function listen(): ResponseInterface
     {
-        return match ($this->getRequest()?->getMethod()) {
+        return match ($this->getRequest()->getMethod()) {
             'OPTIONS' => $this->handleOptionsRequest(),
             'POST' => $this->handlePostRequest(),
             'DELETE' => $this->handleDeleteRequest(),
@@ -92,8 +90,7 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
 
     protected function handlePostRequest(): ResponseInterface
     {
-        $request = $this->getRequest();
-        $body = $request?->getBody()->getContents();
+        $body = $this->getRequest()->getBody()->getContents();
         $this->handleMessage($body, $this->getSessionId());
 
         if ($this->immediateResponse !== null) {
@@ -263,25 +260,14 @@ class CoStreamableHttpTransport extends BaseTransport implements TransportInterf
         return $response;
     }
 
-    protected function getRequest(): ?ServerRequestPlusInterface
+    protected function getRequest(): ServerRequestPlusInterface
     {
-        try {
-            return RequestContext::get();
-        } catch (Throwable $e) {
-            $this->logger->warning('Failed to get request from context.', ['exception' => $e]);
-            return null;
-        }
+        return RequestContext::get();
     }
 
     protected function getSessionId(): ?Uuid
     {
-        return Context::getOrSet('mcp.session.id', function () {
-            $request = $this->getRequest();
-            $sessionId = $request?->getHeaderLine('Mcp-Session-Id');
-            if ($sessionId) {
-                return Uuid::fromString($sessionId);
-            }
-            return null;
-        });
+        $sessionId = $this->getRequest()->getHeaderLine('Mcp-Session-Id');
+        return $sessionId ? Uuid::fromString($sessionId) : null;
     }
 }
