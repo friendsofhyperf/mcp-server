@@ -11,7 +11,6 @@ declare(strict_types=1);
 
 namespace FriendsOfHyperf\McpServer;
 
-use FriendsOfHyperf\McpServer\Transport\CoStreamableHttpTransport;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
@@ -270,7 +269,7 @@ class ServerRegistry
 
     protected function registerHttpRouter(Server $server, array $options): void
     {
-        $server->run($transport = new CoStreamableHttpTransport());
+        $server->run($transport = new Transport\CoStreamableHttpTransport());
         $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
