@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\McpServer\Tests;
+namespace FriendsOfHyperf\Tests\McpServer;
 
 use FriendsOfHyperf\McpServer\ConfigProvider;
 use Mcp\Server\Session\InMemorySessionStore;

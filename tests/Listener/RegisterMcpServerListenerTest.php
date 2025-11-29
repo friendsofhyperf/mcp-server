@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @contact  Deeka Wong <huangdijia@gmail.com>
  */
 
-namespace FriendsOfHyperf\Mcp\Tests\Listener;
+namespace FriendsOfHyperf\Tests\McpServer\Listener;
 
 use FriendsOfHyperf\McpServer\Listener\RegisterMcpServerListener;
 use FriendsOfHyperf\McpServer\ServerRegistry;
