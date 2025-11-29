@@ -14,7 +14,6 @@ namespace FriendsOfHyperf\McpServer;
 use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\HttpServer\Contract\RequestInterface;
 use Hyperf\HttpServer\Router\DispatcherFactory;
 use Hyperf\HttpServer\Router\Router;
 use Mcp\Schema\Enum\ProtocolVersion;
@@ -24,7 +23,6 @@ use Mcp\Server\Builder;
 use Mcp\Server\Handler\Notification\NotificationHandlerInterface;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
 use Mcp\Server\Transport\StdioTransport;
-use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
@@ -271,12 +269,11 @@ class ServerRegistry
 
     protected function registerHttpRouter(Server $server, array $options): void
     {
+        $server->run($transport = new Transport\CoStreamableHttpTransport());
         $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
             $options['path'] ?? '/mcp',
-            function (RequestInterface $request) use ($server) {
-                return $server->run(new StreamableHttpTransport($request));
-            },
+            fn () => $transport->listen(),
             $options['options'] ?? []
         );
         if (! empty($options['server'] ?? '')) {
