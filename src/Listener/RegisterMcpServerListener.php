@@ -11,15 +11,22 @@ declare(strict_types=1);
 
 namespace FriendsOfHyperf\McpServer\Listener;
 
-use FriendsOfHyperf\McpServer\ServerRegistry;
+use FriendsOfHyperf\McpServer\McpCommand;
+use FriendsOfHyperf\McpServer\ServerBuilder;
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
+use Hyperf\HttpServer\Contract\RequestInterface;
+use Hyperf\HttpServer\Router\DispatcherFactory;
+use Hyperf\HttpServer\Router\Router;
+use Mcp\Server\Transport\StreamableHttpTransport;
 use Psr\Container\ContainerInterface;
 
 class RegisterMcpServerListener implements ListenerInterface
 {
     public function __construct(protected ContainerInterface $container)
     {
+        $this->container->get(DispatcherFactory::class); // !!! Don't remove this line
     }
 
     public function listen(): array
@@ -31,7 +38,56 @@ class RegisterMcpServerListener implements ListenerInterface
 
     public function process(object $event): void
     {
-        $manager = $this->container->get(ServerRegistry::class);
-        $manager->register();
+        $config = $this->container->get(ConfigInterface::class);
+        $servers = $config->get('mcp.servers', []);
+        $builder = $this->container->get(ServerBuilder::class);
+
+        foreach ($servers as $options) {
+            if (! empty($options['http'])) {
+                $this->registerRoute($builder, $options);
+            }
+
+            if (! empty($options['stdio'])) {
+                $this->registerCommand($builder, $options);
+            }
+        }
+    }
+
+    protected function registerRoute(ServerBuilder $builder, array $options = []): void
+    {
+        $callable = fn () => Router::addRoute(
+            ['GET', 'POST', 'OPTIONS', 'DELETE'],
+            $options['http']['path'] ?? '/mcp',
+            function (RequestInterface $request) use ($builder, $options) {
+                return $builder->build($options)
+                    ->run(new StreamableHttpTransport($request));
+            },
+            $options['options'] ?? []
+        );
+        if (! empty($options['server'] ?? '')) {
+            Router::addServer($options['server'], $callable);
+        } else {
+            $callable();
+        }
+    }
+
+    protected function registerCommand(ServerBuilder $builder, array $options = []): void
+    {
+        $server = $builder->build($options);
+        $command = new McpCommand(
+            $server,
+            $options['stdio']['name'] ?? 'mcp:server',
+            $options['stdio']['description'] ?? 'Run the MCP server.'
+        );
+        $commandId = 'mcp.command.' . spl_object_hash($command);
+
+        /** @var \Hyperf\Di\Container $container */
+        $container = $this->container;
+        $container->set($commandId, $command);
+
+        $config = $this->container->get(ConfigInterface::class);
+        $commands = $config->get('commands', []);
+        $commands[] = $commandId;
+        $config->set('commands', $commands);
     }
 }

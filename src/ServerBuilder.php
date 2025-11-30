@@ -11,50 +11,34 @@ declare(strict_types=1);
 
 namespace FriendsOfHyperf\McpServer;
 
-use Hyperf\Command\Command;
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Di\Container;
-use Hyperf\HttpServer\Router\DispatcherFactory;
-use Hyperf\HttpServer\Router\Router;
 use Mcp\Schema\Enum\ProtocolVersion;
 use Mcp\Schema\ServerCapabilities;
 use Mcp\Server;
 use Mcp\Server\Builder;
 use Mcp\Server\Handler\Notification\NotificationHandlerInterface;
 use Mcp\Server\Handler\Request\RequestHandlerInterface;
-use Mcp\Server\Transport\StdioTransport;
 use Mcp\Server\Transport\TransportInterface;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use WeakMap;
 
-class ServerRegistry
+class ServerBuilder
 {
     /** @var WeakMap<Server,TransportInterface> */
     protected WeakMap $transports;
 
     public function __construct(
-        protected DispatcherFactory $dispatcherFactory, // !!! Don't remove this line
         protected ContainerInterface $container,
         protected ConfigInterface $config
     ) {
         $this->transports = new WeakMap();
     }
 
-    public function register()
+    public function build(array $options)
     {
-        $servers = $this->config->get('mcp.servers', []);
-
-        foreach ($servers as $options) {
-            if (! ($options['enabled'] ?? true)) {
-                continue;
-            }
-            $server = $this->buildServer($options);
-            ! empty($options['http'] ?? '') && $this->registerHttpRouter($server, $options['http'] ?? []);
-            ! empty($options['stdio'] ?? '') && $this->registerCommand($server, $options['stdio'] ?? []);
-        }
+        return $this->buildServer($options);
     }
 
     protected function buildServer(array $options): Server
@@ -272,67 +256,5 @@ class ServerRegistry
                 $builder->addLoaders($loader);
             }
         }
-    }
-
-    protected function registerHttpRouter(Server $server, array $options): void
-    {
-        $callable = fn () => Router::addRoute(
-            ['GET', 'POST', 'OPTIONS', 'DELETE'],
-            $options['path'] ?? '/mcp',
-            function () use ($server) {
-                if (! isset($this->transports[$server])) {
-                    $server->run($transport = new Transport\CoStreamableHttpTransport());
-                    $this->transports[$server] = $transport;
-                }
-                return $this->transports[$server]->listen();
-            },
-            $options['options'] ?? []
-        );
-        if (! empty($options['server'] ?? '')) {
-            Router::addServer($options['server'], $callable);
-        } else {
-            $callable();
-        }
-    }
-
-    protected function registerCommand(Server $server, array $options): void
-    {
-        $command = new class($this->container, $server, $options) extends Command {
-            protected ?LoggerInterface $logger = null;
-
-            public function __construct(
-                protected ContainerInterface $container,
-                protected Server $server,
-                protected array $options
-            ) {
-                $this->description = $this->options['description'] ?? 'Run the MCP stdio server.';
-                if ($this->container->has(StdoutLoggerInterface::class)) {
-                    $this->logger = $this->container->get(StdoutLoggerInterface::class);
-                }
-                parent::__construct(
-                    $this->options['name'] ?? 'mcp:stdio'
-                );
-            }
-
-            public function handle(): int
-            {
-                $transport = new StdioTransport(logger: $this->logger);
-
-                return $this->server->run($transport);
-            }
-        };
-
-        $commandId = 'mcp.command.' . spl_object_id($command);
-
-        // Try different container methods for binding
-        /** @var Container $container */
-        $container = $this->container;
-        if (method_exists($container, 'set')) {
-            $container->set($commandId, $command);
-        }
-
-        $commands = $this->config->get('commands', []);
-        $commands[] = $commandId;
-        $this->config->set('commands', $commands);
     }
 }
