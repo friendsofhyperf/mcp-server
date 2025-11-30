@@ -9,6 +9,7 @@
         "nums",
         "Protobuf",
         "smsable",
-        "Spinnerable"
+        "Spinnerable",
+        "Streamable"
     ]
 }

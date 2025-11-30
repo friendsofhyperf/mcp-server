@@ -24,8 +24,10 @@ use Psr\Container\ContainerInterface;
 
 class RegisterMcpServerListener implements ListenerInterface
 {
-    public function __construct(protected ContainerInterface $container)
-    {
+    public function __construct(
+        protected ContainerInterface $container,
+        protected ConfigInterface $config,
+    ) {
         $this->container->get(DispatcherFactory::class); // !!! Don't remove this line
     }
 
@@ -38,8 +40,7 @@ class RegisterMcpServerListener implements ListenerInterface
 
     public function process(object $event): void
     {
-        $config = $this->container->get(ConfigInterface::class);
-        $servers = $config->get('mcp.servers', []);
+        $servers = $this->config->get('mcp.servers', []);
         $builder = $this->container->get(ServerBuilder::class);
 
         foreach ($servers as $options) {
@@ -55,17 +56,18 @@ class RegisterMcpServerListener implements ListenerInterface
 
     protected function registerRoute(ServerBuilder $builder, array $options = []): void
     {
+        $route = $options['http'] ?? [];
         $callable = fn () => Router::addRoute(
             ['GET', 'POST', 'OPTIONS', 'DELETE'],
-            $options['http']['path'] ?? '/mcp',
+            $route['path'] ?? '/mcp',
             function (RequestInterface $request) use ($builder, $options) {
                 return $builder->build($options)
                     ->run(new StreamableHttpTransport($request));
             },
-            $options['options'] ?? []
+            $route['options'] ?? []
         );
-        if (! empty($options['server'] ?? '')) {
-            Router::addServer($options['server'], $callable);
+        if (! empty($route['server'] ?? '')) {
+            Router::addServer($route['server'], $callable);
         } else {
             $callable();
         }
@@ -85,9 +87,8 @@ class RegisterMcpServerListener implements ListenerInterface
         $container = $this->container;
         $container->set($commandId, $command);
 
-        $config = $this->container->get(ConfigInterface::class);
-        $commands = $config->get('commands', []);
+        $commands = $this->config->get('commands', []);
         $commands[] = $commandId;
-        $config->set('commands', $commands);
+        $this->config->set('commands', $commands);
     }
 }
